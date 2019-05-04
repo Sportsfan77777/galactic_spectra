@@ -40,8 +40,8 @@ normalize_to_attenuated = [False]
 
 ### Axes ###
 
-ax.set_xlim(100, 700) #; ax.set_xscale('log')
-ax2.set_xlim(100, 1000000); ax2.set_xscale('log')
+ax.set_xlim(10, 1000) #; ax.set_xscale('log')
+ax2.set_xlim(10, 1000000); ax2.set_xscale('log')
 ax.set_ylim(10**-4, 1)
 
 #ax.set_xlabel("UV    Visible Light            ", fontsize = fontsize)
@@ -52,7 +52,7 @@ ax2.set_xlabel("Wavelength (nm)", fontsize = fontsize)
 
 ax.set_ylabel("Luminosity (normalized)", fontsize = fontsize)
 
-ax.set_title("Zoom-in\n(UV and Visible)", fontsize = fontsize + 2)
+ax.set_title("Zoom-in\n(UV, Visible, and Near-IR)", fontsize = fontsize + 2)
 ax2.set_title("UV (10 to 400 nm)\nVisible (400 to 700 nm)\n IR (700 to 10^6 nm)", fontsize = fontsize - 3)
 
 #plot.xscale('log')
@@ -113,8 +113,8 @@ def dust_emission(wavelength, absorption_fraction, dust_emission_f):
 ###############################################################################
 
 # Initial plot
-optical_wavelengths = np.linspace(50, 700, 1000) 
-ir_wavelengths = np.logspace(np.log10(700), np.log10(1000000), 10000)
+optical_wavelengths = np.linspace(5, 1000, 2000) 
+ir_wavelengths = np.logspace(np.log10(1000), np.log10(1000000), 10000)
 wavelengths = np.concatenate((optical_wavelengths, ir_wavelengths))
 
 fluxes = planck(wavelengths, 15000)
@@ -131,7 +131,7 @@ print fluxes
 #### Reference lines ####
 y_ref = [10**(-6), 1.5]
 ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
-ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth + 1)
+ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
 
 ax2.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
 ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
