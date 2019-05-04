@@ -8,20 +8,30 @@ from matplotlib import pyplot as plot
 from matplotlib import gridspec as grid
 from matplotlib.widgets import Slider, Button, RadioButtons
 
-### GUI: Figure and Subplots ###
-fig = plot.figure(figsize = (8, 8))
+###############################################################################
 
-ax = plot.subplot2grid((1, 5), (0, 0), colspan = 3)
-ax2 = plot.subplot2grid((1, 5), (0, 3), colspan = 2)
+# Constants
+h = 6.626 * 10**(-34)
+c = 3.0 * 10**(8)
+k_B = 1.38 * 10**(-23)
+
+###############################################################################
+
+### GUI: Figure and Subplots ###
+fig = plot.figure(figsize = (10, 8))
+fig.canvas.set_window_title("Galaxy Spectra Tool")
+
+ax = plot.subplot2grid((1, 4), (0, 0), colspan = 2)
+ax2 = plot.subplot2grid((1, 4), (0, 2), colspan = 2)
 
 ax.get_shared_y_axes().join(ax, ax2)
 
-fig.subplots_adjust(wspace = 0.25)
+fig.subplots_adjust(wspace = 0.50)
 #ax = axes[0]; ax2 = axes[1]
 plot.subplots_adjust(bottom = 0.40)
 
 ### Plotting parameters ###
-fontsize = 16
+fontsize = 18
 linewidth = 4
 
 normalize_to_attenuated = [False]
@@ -29,25 +39,25 @@ normalize_to_attenuated = [False]
 ### Axes ###
 
 ax.set_xlim(100, 700) #; ax.set_xscale('log')
-ax2.set_xlim(700, 100000); ax2.set_xscale('log')
+ax2.set_xlim(100, 100000); ax2.set_xscale('log')
 ax.set_ylim(10**-4, 1)
 
 #ax.set_xlabel("UV    Visible Light            ", fontsize = fontsize)
 #ax2.set_xlabel("Infrared (IR)", fontsize = fontsize)
 
 ax.set_xlabel("Wavelength (nm)", fontsize = fontsize)
+ax2.set_xlabel("Wavelength (nm)", fontsize = fontsize)
+
 ax.set_ylabel("Normalized Luminosity", fontsize = fontsize)
-ax2.set_yticklabels([])
+
+ax.set_title("Zoom-in\n(UV and Visible)", fontsize = fontsize + 2)
+ax2.set_title("UV (<400 nm)\nVisible (400 to 700 nm)\n IR (>700 nm)", fontsize = fontsize - 3)
 
 #plot.xscale('log')
 
-# Constants
-h = 6.626 * 10**(-34)
-c = 3.0 * 10**(8)
-k_B = 1.38 * 10**(-23)
+###############################################################################
 
-
-# Plotting functions
+### Plotting functions ###
 
 # Spectrum functions
 def planck(wavelength, temperature):
@@ -71,6 +81,8 @@ def dust_emission(wavelength):
     #Source: https://www.astro.umd.edu/~richard/ASTRO421/Lecture_9.pdf
     pass
 
+###############################################################################
+
 # Initial plot
 optical_wavelengths = np.linspace(50, 700, 1000) 
 ir_wavelengths = np.logspace(np.log10(700), np.log10(120000), 1000)
@@ -90,7 +102,10 @@ print fluxes
 #### Reference lines ####
 y_ref = [10**(-6), 1.5]
 ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
-#ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
+ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth + 1)
+
+ax2.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
+ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
 
 ###############################################################################
 
@@ -120,14 +135,14 @@ ax_ta = plot.axes([T_slider_x, slider_y - 2.0 * slider_separation, T_slider_leng
 ax_tg = plot.axes([T_slider_x, slider_y - 3.0 * slider_separation, T_slider_length, slider_height])
 ax_tm = plot.axes([T_slider_x, slider_y - 4.0 * slider_separation, T_slider_length, slider_height])
 
-Tb_slider = Slider(ax_tb, 'T (K)', 10000, 30000, valinit = 15000)
-Ta_slider = Slider(ax_ta, 'T (K)', 7500, 10000, valinit = 8000)
-Tg_slider = Slider(ax_tg, 'T (K)', 5200, 6000, valinit = 5500)
-Tm_slider = Slider(ax_tm, 'T (K)', 2400, 3700, valinit = 3000)
+Tb_slider = Slider(ax_tb, 'T (K)', 10000, 30000, valinit = 15000, valfmt = "%d")
+Ta_slider = Slider(ax_ta, 'T (K)', 7500, 10000, valinit = 8000, valfmt = "%d")
+Tg_slider = Slider(ax_tg, 'T (K)', 5200, 6000, valinit = 5500, valfmt = "%d")
+Tm_slider = Slider(ax_tm, 'T (K)', 2400, 3700, valinit = 3000, valfmt = "%d")
 
 ax_dust = plot.axes([slider_x, slider_y - 6.0 * slider_separation, slider_length, slider_height])
 
-dust_slider = Slider(ax_dust, 'Dust', -1, 2.0, valinit = 0)
+dust_slider = Slider(ax_dust, 'Dust', -1, 2.5, valinit = 0)
 
 ###############################################################################
 
@@ -194,7 +209,6 @@ dust_slider.on_changed(update)
 def set_y(val):
     ax.set_yscale(val)
     ax2.set_yscale(val)
-    ax2.set_yticklabels([])
     fig.canvas.draw_idle()
 
 def set_norm(val):
