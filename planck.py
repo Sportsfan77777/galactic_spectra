@@ -112,7 +112,21 @@ def dust_emission(wavelength, absorption_fraction, dust_emission_f):
 
 ###############################################################################
 
-# Initial plot
+### Reference lines ###
+alpha = 0.1
+y_ref = [10**(-6), 1.5]
+ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+
+ax2.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+
+ax.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '\\', alpha = alpha)
+ax.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '//', alpha = alpha)
+ax2.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '\\', alpha = alpha)
+ax2.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '//', alpha = alpha)
+
+### Initial plot ###
 optical_wavelengths = np.linspace(5, 1000, 2000) 
 ir_wavelengths = np.logspace(np.log10(1000), np.log10(1000000), 10000)
 wavelengths = np.concatenate((optical_wavelengths, ir_wavelengths))
@@ -127,14 +141,6 @@ spectrum_extincted2, = ax2.plot(wavelengths, fluxes, c = "r", linewidth = linewi
 
 print wavelengths
 print fluxes
-
-#### Reference lines ####
-y_ref = [10**(-6), 1.5]
-ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
-ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
-
-ax2.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
-ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
 
 ###############################################################################
 
