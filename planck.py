@@ -53,7 +53,7 @@ ax2.set_xlabel("Wavelength (nm)", fontsize = fontsize)
 ax.set_ylabel("Luminosity (normalized)", fontsize = fontsize)
 
 ax.set_title("Zoom-in\n(UV and Visible)", fontsize = fontsize + 2)
-ax2.set_title("UV (<400 nm)\nVisible (400 to 700 nm)\n IR (>700 nm)", fontsize = fontsize - 3)
+ax2.set_title("UV (10 to 400 nm)\nVisible (400 to 700 nm)\n IR (700 to 10^6 nm)", fontsize = fontsize - 3)
 
 #plot.xscale('log')
 
@@ -141,7 +141,7 @@ ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
 #### Sliders ####
 
 slider_x = 0.42
-slider_y = 0.25
+slider_y = 0.30
 slider_length = 0.56 - slider_x
 slider_height = 0.02
 slider_separation = 0.03
@@ -170,8 +170,12 @@ Tg_slider = Slider(ax_tg, 'T (K)', 5200, 6000, valinit = 5500, valfmt = "%d")
 Tm_slider = Slider(ax_tm, 'T (K)', 2400, 3700, valinit = 3000, valfmt = "%d")
 
 ax_dust = plot.axes([slider_x, slider_y - 6.0 * slider_separation, slider_length, slider_height])
+ax_hot_gas = plot.axes([slider_x, slider_y - 7.0 * slider_separation, slider_length, slider_height])
+ax_cold_gas = plot.axes([slider_x, slider_y - 8.0 * slider_separation, slider_length, slider_height])
 
 dust_slider = Slider(ax_dust, 'Dust', -1, 2.5, valinit = 0)
+hot_gas_slider = Slider(ax_hot_gas, 'Hot Gas', -1, 2.5, valinit = 0)
+cold_gas_slider = Slider(ax_cold_gas, 'Cold Gas', -1, 2.5, valinit = 0)
 
 ###############################################################################
 
