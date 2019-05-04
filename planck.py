@@ -189,6 +189,8 @@ radio_norm = RadioButtons(ax_norm, ('normalize blue', 'normalize red'), active =
 
 ###############################################################################
 
+### Slider Listeners ###
+
 def update(val):
     num_b = b_slider.val; num_a = a_slider.val; num_g = g_slider.val; num_m = m_slider.val
     temp_b = Tb_slider.val; temp_a = Ta_slider.val; temp_g = Tg_slider.val; temp_m = Tm_slider.val
@@ -244,6 +246,10 @@ Tb_slider.on_changed(update); Ta_slider.on_changed(update); Tg_slider.on_changed
 
 dust_slider.on_changed(update)
 
+###############################################################################
+
+### Radio Listeners ###
+
 def set_y(val):
     ax.set_yscale(val)
     ax2.set_yscale(val)
@@ -260,7 +266,7 @@ def set_norm(val):
 radio_y.on_clicked(set_y)
 radio_norm.on_clicked(set_norm)
 
-### MAIN ###
-#makeGUI()
+###############################################################################
 
+### MAIN ###
 plot.show()
