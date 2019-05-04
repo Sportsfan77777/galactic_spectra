@@ -117,7 +117,7 @@ optical_wavelengths = np.linspace(5, 1000, 2000)
 ir_wavelengths = np.logspace(np.log10(1000), np.log10(1000000), 10000)
 wavelengths = np.concatenate((optical_wavelengths, ir_wavelengths))
 
-fluxes = planck(wavelengths, 15000)
+fluxes = planck(wavelengths, 5500)
 fluxes /= np.max(fluxes)
 spectrum, = ax.plot(wavelengths, fluxes, c = "b", linewidth = linewidth)
 spectrum2, = ax2.plot(wavelengths, fluxes, c = "b", linewidth = linewidth)
@@ -151,9 +151,9 @@ ax_a = plot.axes([slider_x, slider_y - 2.0 * slider_separation, slider_length, s
 ax_g = plot.axes([slider_x, slider_y - 3.0 * slider_separation, slider_length, slider_height])
 ax_m = plot.axes([slider_x, slider_y - 4.0 * slider_separation, slider_length, slider_height])
 
-b_slider = Slider(ax_b, 'B stars (Blue)', -1, 5.0, valinit = 0)
+b_slider = Slider(ax_b, 'B stars (Blue)', -1, 5.0, valinit = -0.01)
 a_slider = Slider(ax_a, 'A stars (White)', -1, 5.0, valinit = -0.01)
-g_slider = Slider(ax_g, 'G stars (Yellow)', -1, 5.0, valinit = -0.01)
+g_slider = Slider(ax_g, 'G stars (Yellow)', -1, 5.0, valinit = 0.0)
 m_slider = Slider(ax_m, 'M stars (Red)', -1, 5.0, valinit = -0.01)
 
 T_slider_x = 0.77
