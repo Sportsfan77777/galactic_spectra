@@ -4,6 +4,8 @@ Galaxy Spectrum Tool
 
 import math
 import numpy as np
+from scipy.interpolate import interp2d
+
 from matplotlib import pyplot as plot
 from matplotlib import gridspec as grid
 from matplotlib.widgets import Slider, Button, RadioButtons
@@ -39,7 +41,7 @@ normalize_to_attenuated = [False]
 ### Axes ###
 
 ax.set_xlim(100, 700) #; ax.set_xscale('log')
-ax2.set_xlim(100, 100000); ax2.set_xscale('log')
+ax2.set_xlim(100, 1000000); ax2.set_xscale('log')
 ax.set_ylim(10**-4, 1)
 
 #ax.set_xlabel("UV    Visible Light            ", fontsize = fontsize)
@@ -48,7 +50,7 @@ ax.set_ylim(10**-4, 1)
 ax.set_xlabel("Wavelength (nm)", fontsize = fontsize)
 ax2.set_xlabel("Wavelength (nm)", fontsize = fontsize)
 
-ax.set_ylabel("Normalized Luminosity", fontsize = fontsize)
+ax.set_ylabel("Luminosity (normalized)", fontsize = fontsize)
 
 ax.set_title("Zoom-in\n(UV and Visible)", fontsize = fontsize + 2)
 ax2.set_title("UV (<400 nm)\nVisible (400 to 700 nm)\n IR (>700 nm)", fontsize = fontsize - 3)
@@ -59,7 +61,32 @@ ax2.set_title("UV (<400 nm)\nVisible (400 to 700 nm)\n IR (>700 nm)", fontsize =
 
 ### Plotting functions ###
 
-# Spectrum functions
+def get_dust_interpolation_function():
+    # From Dale, Helou, et al. 2014
+    num_files = 64
+
+    dust_emission_data = np.zeros((num_files + 1, 215)) # There are 214 wavelengths in each data file
+    dust_emission_data[:-1, 0] = -35; dust_emission_data[-1, :] = -50 # Have a zero absorption case
+
+    dust_wavelengths = np.zeros(215)
+    dust_wavelengths[0] = 0.05
+
+    for i in range(num_files):
+        fn = "dust_emission/spec_%02d.dat" % (i + 1)
+        data_i = np.loadtxt(fn)
+        dust_wavelengths[1:] = data_i[:, 0]
+        dust_emission_data[i, 1:] = data_i[:, 1]
+
+    x = dust_wavelengths * 1000.0 # Convert from um to nm
+    y = np.linspace(0, 1, num_files + 1) # Absorption fraction
+    z = dust_emission_data - np.max(dust_emission_data) - 1.0
+
+    dust_emission_interpolator = interp2d(x, y, z)
+    return dust_emission_interpolator
+dust_emission_interpolator = get_dust_interpolation_function()
+
+### Spectrum functions ###
+
 def planck(wavelength, temperature):
     # Planck's Law
     wavelength_m = wavelength * 10**(-9) # convert nm to m
@@ -77,15 +104,17 @@ def dust_extinction(wavelength, A_v, R_v = 4.05):
         k_lambda = 2.659 * (-1.857 + 1.040 / wavelength_u) + R_v
     return np.power(10, -0.4 * k_lambda * A_v / R_v)
 
-def dust_emission(wavelength):
-    #Source: https://www.astro.umd.edu/~richard/ASTRO421/Lecture_9.pdf
-    pass
+def dust_emission(wavelength, absorption_fraction, dust_emission_f):
+    # Use interpolator
+    return np.power(10, dust_emission_f(wavelength, absorption_fraction))
+
+### Helper functions ###
 
 ###############################################################################
 
 # Initial plot
 optical_wavelengths = np.linspace(50, 700, 1000) 
-ir_wavelengths = np.logspace(np.log10(700), np.log10(120000), 1000)
+ir_wavelengths = np.logspace(np.log10(700), np.log10(1000000), 10000)
 wavelengths = np.concatenate((optical_wavelengths, ir_wavelengths))
 
 fluxes = planck(wavelengths, 15000)
@@ -113,7 +142,7 @@ ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
 
 slider_x = 0.42
 slider_y = 0.25
-slider_length = 0.60 - slider_x
+slider_length = 0.56 - slider_x
 slider_height = 0.02
 slider_separation = 0.03
 
@@ -127,8 +156,8 @@ a_slider = Slider(ax_a, 'A stars (White)', -1, 5.0, valinit = -0.01)
 g_slider = Slider(ax_g, 'G stars (Yellow)', -1, 5.0, valinit = -0.01)
 m_slider = Slider(ax_m, 'M stars (Red)', -1, 5.0, valinit = -0.01)
 
-T_slider_x = 0.75
-T_slider_length = 0.10
+T_slider_x = 0.77
+T_slider_length = 0.08
 
 ax_tb = plot.axes([T_slider_x, slider_y - 1.0 * slider_separation, T_slider_length, slider_height])
 ax_ta = plot.axes([T_slider_x, slider_y - 2.0 * slider_separation, T_slider_length, slider_height])
@@ -178,7 +207,7 @@ def update(val):
     if dust_Av < 0:
         dust_Av = 0
 
-    # Unattenuated spectrum
+    ### Unattenuated spectrum ###
     composite_spectrum_f = lambda x : include_b * np.power(10.0, num_b) * planck(x, temp_b) \
                                     + include_a * np.power(10.0, num_a) * planck(x, temp_a) \
                                     + include_g * np.power(10.0, num_g) * planck(x, temp_g) \
@@ -186,11 +215,20 @@ def update(val):
     composite_spectrum = composite_spectrum_f(wavelengths)
     composite_spectrum /= np.max(composite_spectrum)
 
-    # Attenuated spectrum
+    ### Attenuated spectrum ###
     extinction_f = np.vectorize(lambda x : dust_extinction(x, dust_Av))
     composite_spectrum_extincted = composite_spectrum * extinction_f(wavelengths)
 
-    # Switch normalization?
+    # Add dust emission ###
+    absorption_fraction = np.sum(composite_spectrum_extincted) / np.sum(composite_spectrum)
+    print "Absorption Fraction: %.3f" % absorption_fraction
+
+    dust_emission_f = np.vectorize(lambda x : dust_emission(x, absorption_fraction, dust_emission_interpolator))
+    dust_spectrum = dust_emission_f(wavelengths)
+
+    composite_spectrum_extincted += dust_spectrum
+
+    ### Switch normalization? ###
     if normalize_to_attenuated[0]:
         max_ratio = np.max(composite_spectrum) / np.max(composite_spectrum_extincted)
         composite_spectrum *= max_ratio

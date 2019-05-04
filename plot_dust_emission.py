@@ -27,7 +27,7 @@ def read_data():
 def plot_data():
     for i in range(num_files):
         x = wavelengths
-        y = dust_emission_data[i, :]
+        y = dust_emission_data[i, :] - np.max(dust_emission_data)
         plot.plot(x, y, linewidth = 1)
 
     plot.xscale('log')
@@ -44,7 +44,7 @@ def interpolate_data(wavelength, absorption_fraction):
     return dust_emission_f(wavelength, absorption_fraction)
 
 read_data()
-#plot_data()
+plot_data()
 
 test_wavelengths = np.linspace(1, 50, 10)
 
