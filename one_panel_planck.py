@@ -5,49 +5,25 @@ Galaxy Spectrum Tool
 import math
 import numpy as np
 from matplotlib import pyplot as plot
-from matplotlib import gridspec as grid
 from matplotlib.widgets import Slider, Button, RadioButtons
 
-### GUI: Figure and Subplots ###
-fig = plot.figure(figsize = (8, 8))
-
-ax = plot.subplot2grid((1, 5), (0, 0), colspan = 3)
-ax2 = plot.subplot2grid((1, 5), (0, 3), colspan = 2)
-
-ax.get_shared_y_axes().join(ax, ax2)
-
-fig.subplots_adjust(wspace = 0.25)
-#ax = axes[0]; ax2 = axes[1]
+# GUI
+fig, axes = plot.subplots(1, 2, sharey = True, figsize = (8, 8))
+ax = axes[0]; ax2 = axes[1]
 plot.subplots_adjust(bottom = 0.40)
-
-### Plotting parameters ###
-fontsize = 16
-linewidth = 4
-
-normalize_to_attenuated = [False]
-
-### Axes ###
-
-ax.set_xlim(100, 700) #; ax.set_xscale('log')
-ax2.set_xlim(700, 100000); ax2.set_xscale('log')
-ax.set_ylim(10**-4, 1)
-
-#ax.set_xlabel("UV    Visible Light            ", fontsize = fontsize)
-#ax2.set_xlabel("Infrared (IR)", fontsize = fontsize)
-
-ax.set_xlabel("Wavelength (nm)", fontsize = fontsize)
-ax.set_ylabel("Normalized Luminosity", fontsize = fontsize)
-ax2.set_yticklabels([])
-
-#plot.xscale('log')
 
 # Constants
 h = 6.626 * 10**(-34)
 c = 3.0 * 10**(8)
 k_B = 1.38 * 10**(-23)
 
+# Plotting parameters
+fontsize = 16
+linewidth = 4
 
-# Plotting functions
+normalize_to_attenuated = [False]
+
+# Plotting
 
 # Spectrum functions
 def planck(wavelength, temperature):
@@ -73,28 +49,32 @@ def dust_emission(wavelength):
 
 # Initial plot
 optical_wavelengths = np.linspace(50, 700, 1000) 
-ir_wavelengths = np.logspace(np.log10(700), np.log10(120000), 1000)
+ir_wavelengths = np.logspace(np.log10(700), np.log10(10000), 1000)
 wavelengths = np.concatenate((optical_wavelengths, ir_wavelengths))
 
 fluxes = planck(wavelengths, 15000)
 fluxes /= np.max(fluxes)
-spectrum, = ax.plot(wavelengths, fluxes, c = "b", linewidth = linewidth)
-spectrum2, = ax2.plot(wavelengths, fluxes, c = "b", linewidth = linewidth)
+spectrum, = plot.plot(wavelengths, fluxes, linewidth = linewidth)
 
-spectrum_extincted, = ax.plot(wavelengths, fluxes, c = "r", linewidth = linewidth)
-spectrum_extincted2, = ax2.plot(wavelengths, fluxes, c = "r", linewidth = linewidth)
+spectrum_extincted, = plot.plot(wavelengths, fluxes, c = "r", linewidth = linewidth)
 
 print wavelengths
 print fluxes
 
-#### Reference lines ####
+# Reference lines
 y_ref = [10**(-6), 1.5]
-ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
-#ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
+plot.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 1)
+plot.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 1)
 
-###############################################################################
+plot.xlim(100, 1000)
+plot.ylim(10**-4, 1)
 
-#### Sliders ####
+plot.xlabel("Wavelength (nm)", fontsize = fontsize)
+plot.ylabel("Normalized Luminosity", fontsize = fontsize)
+
+#plot.xscale('log')
+
+# Sliders
 
 slider_x = 0.42
 slider_y = 0.25
@@ -129,10 +109,6 @@ ax_dust = plot.axes([slider_x, slider_y - 6.0 * slider_separation, slider_length
 
 dust_slider = Slider(ax_dust, 'Dust', -1, 2.0, valinit = 0)
 
-###############################################################################
-
-#### Radio Buttons ####
-
 # Radio Buttons
 radio_length = 0.10
 radio_height = 0.10
@@ -143,7 +119,6 @@ radio_y = RadioButtons(ax_y, ('linear', 'log'), active = 0)
 ax_norm = plot.axes([0.05, slider_y + slider_height - radio_height - radio_separation, radio_length + 0.10, radio_height])
 radio_norm = RadioButtons(ax_norm, ('normalize blue', 'normalize red'), active = 0)
 
-###############################################################################
 
 def update(val):
     num_b = b_slider.val; num_a = a_slider.val; num_g = g_slider.val; num_m = m_slider.val
@@ -177,12 +152,13 @@ def update(val):
 
     # Switch normalization?
     if normalize_to_attenuated[0]:
+        # Doesn't work?????
         max_ratio = np.max(composite_spectrum) / np.max(composite_spectrum_extincted)
         composite_spectrum *= max_ratio
         composite_spectrum_extincted /= np.max(composite_spectrum_extincted)        
     
-    spectrum.set_ydata(composite_spectrum); spectrum2.set_ydata(composite_spectrum) 
-    spectrum_extincted.set_ydata(composite_spectrum_extincted); spectrum_extincted2.set_ydata(composite_spectrum_extincted)
+    spectrum.set_ydata(composite_spectrum)
+    spectrum_extincted.set_ydata(composite_spectrum_extincted)
 
     fig.canvas.draw_idle()
 
@@ -193,8 +169,6 @@ dust_slider.on_changed(update)
 
 def set_y(val):
     ax.set_yscale(val)
-    ax2.set_yscale(val)
-    ax2.set_yticklabels([])
     fig.canvas.draw_idle()
 
 def set_norm(val):
