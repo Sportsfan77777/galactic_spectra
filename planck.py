@@ -113,18 +113,29 @@ def dust_emission(wavelength, absorption_fraction, dust_emission_f):
 ###############################################################################
 
 ### Reference lines ###
-alpha = 0.1
+alpha = 0.10
 y_ref = [10**(-6), 1.5]
-ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
-ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+#ax.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+#ax.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
 
-ax2.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
-ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+#ax2.plot([400, 400], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
+#ax2.plot([700, 700], y_ref, c = "k", linewidth = linewidth - 2, alpha = alpha)
 
-ax.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '\\', alpha = alpha)
-ax.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '//', alpha = alpha)
-ax2.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '\\', alpha = alpha)
-ax2.fill([400, 700, 700, 400], [10**(-6), 10**(-6), 1, 1], fill = False, hatch = '//', alpha = alpha)
+# Simple Hatch
+y_hatch = [10**(-6), 10**(-6), 1, 1]
+#ax.fill([400, 700, 700, 400], y_hatch, fill = False, hatch = '\\', alpha = alpha)
+#ax.fill([400, 700, 700, 400], y_hatch, fill = False, hatch = '//', alpha = alpha)
+ax2.fill([400, 700, 700, 400], y_hatch, fill = False, hatch = '\\', alpha = alpha)
+ax2.fill([400, 700, 700, 400], y_hatch, fill = False, hatch = '//', alpha = alpha)
+
+# Rainbow Region
+alpha_rainbow = 0.03; num_colors = 500
+
+coordinates = np.linspace(400, 700, num_colors); y_region = np.array([10**(-6), 1])
+visible_spectrum = np.zeros((num_colors, 2))
+visible_spectrum[:, 0] = coordinates; visible_spectrum[:, 1] = coordinates
+ax.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nipy_spectral', alpha = alpha_rainbow)
+#ax2.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nipy_spectral', alpha = alpha)
 
 ### Initial plot ###
 optical_wavelengths = np.linspace(5, 1000, 2000) 
