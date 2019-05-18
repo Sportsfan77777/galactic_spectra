@@ -34,7 +34,7 @@ plot.subplots_adjust(bottom = 0.40)
 
 ### Plotting parameters ###
 fontsize = 18
-linewidth = 4
+linewidth = 2
 
 normalize_to_attenuated = [False]
 
@@ -135,7 +135,7 @@ coordinates = np.linspace(400, 700, num_colors); y_region = np.array([10**(-6), 
 visible_spectrum = np.zeros((num_colors, 2))
 visible_spectrum[:, 0] = coordinates; visible_spectrum[:, 1] = coordinates
 ax.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nipy_spectral', alpha = alpha_rainbow)
-#ax2.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nipy_spectral', alpha = alpha)
+#ax2.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nipy_spectral', alpha = 0.01)
 
 ### Initial plot ###
 optical_wavelengths = np.linspace(5, 1000, 2000) 
@@ -198,7 +198,6 @@ cold_gas_slider = Slider(ax_cold_gas, 'Cold Gas', -1, 2.5, valinit = 0)
 
 #### Radio Buttons ####
 
-# Radio Buttons
 radio_length = 0.10
 radio_height = 0.10
 radio_separation = 0.12

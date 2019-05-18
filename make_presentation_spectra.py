@@ -91,24 +91,24 @@ spectral_map = LinearSegmentedColormap.from_list("spectrum", color_list)
 
 ### Make plots ###
 
-linewidth = 2
-fontsize = 17
+linewidth = 3
+fontsize = 16
 dpi = 250
 tex = False
 dark_alpha = 1.0 # 0.75 hides most of the color
+grid_alpha = 0.4
 
 def make_plot(show = False):
     fig = plot.figure(figsize = (8, 4))
 
     # Data
     wavelengths = np.linspace(100, 1000, 1000)
-    spectrum = planck(wavelengths, 15700)
+    spectrum = planck(wavelengths, 6000) + 10 * planck(wavelengths, 3000)
 
     # Spectral grid
     luminosities = np.linspace(0, 2, 10)
     x_grid, y_grid = np.meshgrid(wavelengths, luminosities)
     extent = (wavelengths[0], wavelengths[-1], luminosities[0], luminosities[-1])
-
 
     # Plot spectra
     x = wavelengths
@@ -117,19 +117,24 @@ def make_plot(show = False):
     uv_end = np.searchsorted(wavelengths, start_wavelength)
     ir_start = np.searchsorted(wavelengths, end_wavelength)
 
-    plot.plot(x, y, c = 'k', linewidth = linewidth)
+    plot.plot(x, y, c = 'k', linewidth = linewidth, zorder = 100)
 
     # Grid Lines
-    plot.grid(linestyle = '--')
+    x_gridlines = np.linspace(100, 1000, 10)
+    y_gridlines = np.linspace(0, 1, 6)
+    for xg_i in x_gridlines[1:-1]:
+        xg_y = y[np.searchsorted(wavelengths, xg_i)]
+        #plot.plot([xg_i, xg_i], [xg_y, 1], c = 'k', linewidth = 1, linestyle = '--', zorder = 15, alpha = grid_alpha)
+    #plot.grid(alpha = 0.9, zorder = 80)
 
     # Decorate with spectral colors
-    plot.imshow(x_grid, extent = extent, clim = clim, cmap = spectral_map, aspect = 'auto')
+    plot.imshow(x_grid, extent = extent, clim = clim, cmap = spectral_map, aspect = 'auto', zorder = 5)
 
     upper_curve = 2
-    plot.fill_between(x, y, upper_curve, color = 'w')
+    plot.fill_between(x, y, upper_curve, color = 'w', zorder = 10) # clear spectral colors above
 
-    plot.fill_between(x[:uv_end], y[:uv_end], color = 'k', alpha = dark_alpha)
-    plot.fill_between(x[ir_start:], y[ir_start:], color = 'k', alpha = dark_alpha)
+    plot.fill_between(x[:uv_end], y[:uv_end], color = 'k', alpha = dark_alpha, zorder = 20) # clear spectral colors in UV
+    plot.fill_between(x[ir_start:], y[ir_start:], color = 'k', alpha = dark_alpha, zorder = 20) #  clear spectral colors in IR
 
     # Axes
     plot.xlim(100, 1000)
