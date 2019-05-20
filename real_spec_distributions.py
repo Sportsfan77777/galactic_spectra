@@ -161,6 +161,8 @@ dust_emission_interpolator = get_dust_interpolation_function()
 def planck(wavelength, stellar_type):
     # Wavelength range for interpolator
     start_wavelength = 150.0; end_wavelength = 2450.0
+    if stellar_type == 'O' or stellar_type == 'B':
+        start_wavelength = 116.0
     if stellar_type == 'M':
         start_wavelength = 300.0
     interpolator = stellar_spectra_interpolators[stellar_type]
@@ -224,7 +226,7 @@ ax.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nip
 #ax2.pcolormesh(coordinates, y_region, np.transpose(visible_spectrum), cmap = 'nipy_spectral', alpha = 0.01)
 
 ### Initial plot ###
-optical_wavelengths = np.linspace(5, 1000, 2000) 
+optical_wavelengths = np.linspace(125, 1000, 2000) 
 ir_wavelengths = np.logspace(np.log10(1000), np.log10(1000000), 10000)
 wavelengths = np.concatenate((optical_wavelengths, ir_wavelengths))
 
@@ -265,9 +267,28 @@ ax_T_pop1 = plot.axes([T_slider_x, slider_y - 1.0 * slider_separation, T_slider_
 ax_T_pop2 = plot.axes([T_slider_x, slider_y - 2.0 * slider_separation, T_slider_length, slider_height])
 ax_T_pop3 = plot.axes([T_slider_x, slider_y - 3.0 * slider_separation, T_slider_length, slider_height])
 
-T_pop1_slider = Slider(ax_T_pop1, 'Hottest star in Pop #1', 0, 7, valinit = 7, valstep = 1, valfmt = "%d")
-T_pop2_slider = Slider(ax_T_pop2, 'Hottest star in Pop #2', 0, 7, valinit = 5, valstep = 1, valfmt = "%d")
-T_pop3_slider = Slider(ax_T_pop3, 'Hottest star in Pop #3', 0, 7, valinit = 3, valstep = 1, valfmt = "%d")
+T_pop1_slider = Slider(ax_T_pop1, 'Hottest star in Pop #1 ', 0, 7, valinit = 7, valstep = 1, valfmt = "%d")
+T_pop2_slider = Slider(ax_T_pop2, 'Hottest star in Pop #2 ', 0, 7, valinit = 5, valstep = 1, valfmt = "%d")
+T_pop3_slider = Slider(ax_T_pop3, 'Hottest star in Pop #3 ', 0, 7, valinit = 3, valstep = 1, valfmt = "%d")
+
+ax_dust = plot.axes([slider_x, slider_y - 6.0 * slider_separation, slider_length, slider_height])
+
+dust_slider = Slider(ax_dust, 'Dust', 0.0, 2.5, valinit = 0)
+
+###############################################################################
+
+#### Radio Buttons ####
+
+radio_length = 0.10
+radio_height = 0.10
+radio_separation = 0.10
+ax_x = plot.axes([0.05, slider_y + slider_height - radio_height, radio_length, radio_height])
+radio_x = RadioButtons(ax_x, ('linear', 'log'), active = 0)
+ax_y = plot.axes([0.05, slider_y + slider_height - radio_height - radio_separation, radio_length, radio_height])
+radio_y = RadioButtons(ax_y, ('linear', 'log'), active = 0)
+
+ax_norm = plot.axes([0.05, slider_y + slider_height - radio_height - 2 * radio_separation, radio_length + 0.10, radio_height])
+radio_norm = RadioButtons(ax_norm, ('blue', 'red'), active = 0)
 
 ###############################################################################
 
@@ -297,14 +318,13 @@ def sum_luminosities(include):
 def update(val):
     num_1 = pop1_slider.val; num_2 = pop2_slider.val; num_3 = pop3_slider.val
     temp_1 = int(T_pop1_slider.val); temp_2 = int(T_pop2_slider.val); temp_3 = int(T_pop3_slider.val)
-    #dust_Av = dust_slider.val
-    dust_Av = 0
+    dust_Av = dust_slider.val
 
     include1 = np.zeros(7); include2 = np.zeros(7); include3 = np.zeros(7) # There are 7 stellar types
     include1[:temp_1] = 1; include2[:temp_2] = 1; include3[:temp_3] = 1
 
     ### Unattenuated spectrum ### 
-    composite_spectrum1 = (10**num_1 - 1) * sum_luminosities(include1)
+    composite_spectrum1 = (10**num_1 - 1) * sum_luminosities(include1) # 10^x - 1
     composite_spectrum2 = (10**num_2 - 1) * sum_luminosities(include2)
     composite_spectrum3 = (10**num_3 - 1) * sum_luminosities(include3)
     composite_spectrum = composite_spectrum1 + composite_spectrum2 + composite_spectrum3
@@ -337,6 +357,36 @@ def update(val):
 
 pop1_slider.on_changed(update); pop2_slider.on_changed(update); pop3_slider.on_changed(update)
 T_pop1_slider.on_changed(update); T_pop2_slider.on_changed(update); T_pop3_slider.on_changed(update)
+
+dust_slider.on_changed(update)
+
+###############################################################################
+
+### Radio Listeners ###
+
+def set_x(val):
+    ax.set_xscale(val)
+    if val == 'log':
+        ax.set_xlim(100, 10**6)
+    else:
+        ax.set_xlim(100, 1000)
+    fig.canvas.draw_idle()
+
+def set_y(val):
+    ax.set_yscale(val)
+    fig.canvas.draw_idle()
+
+def set_norm(val):
+    if val == "blue":
+        normalize_to_attenuated[0] = False
+    if val == "red":
+        normalize_to_attenuated[0] = True
+    update(val)
+    fig.canvas.draw_idle()
+
+radio_x.on_clicked(set_x)
+radio_y.on_clicked(set_y)
+radio_norm.on_clicked(set_norm)
 
 ### MAIN ###
 plot.show()
