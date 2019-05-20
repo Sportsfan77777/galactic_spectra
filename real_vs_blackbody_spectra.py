@@ -1,5 +1,7 @@
 """
 Make spectra for presentations
+
+Note: Reference stellar spectra: http://vizier.u-strasbg.fr/viz-bin/VizieR-4
 """
 
 import math
